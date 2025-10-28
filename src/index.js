@@ -1,81 +1,52 @@
 import express from "express";
-import dotenv from "dotenv";
-dotenv.config();
-import passport from "passport";
-import session from "express-session";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import cors from "cors";
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import passport from "passport";
+import setupPassport from "./config/passport.js";
+import oauthRoutes from "./routes/oauthRoute.js";
+import userRoutes from "./routes/userRoute.js";
+import dotenv from "dotenv";
+import connectDB from "./config/mongodb.js";
+
+dotenv.config();
+
+const PORT = process.env.PORT || 5050;
+
+connectDB(process.env.MONGODB_URL);
 
 const app = express();
 
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
 app.use(
   cors({
-    origin: `${process.env.FRONTEND_URL}`,
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
 
-// Middleware
 app.use(
   session({
     secret: "secret",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URL,
+      collectionName: "sessions",
+    }),
   })
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
+setupPassport(passport);
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.BACKEND_URL}/oauth/google/callback`,
-    },
-    (accessToken, refreshToken, profile, done) => {
-      return done(null, profile);
-    }
-  )
-);
+app.use("/oauth", oauthRoutes);
+app.use("/user", userRoutes);
 
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-passport.deserializeUser((user, done) => {
-  done(null, user);
-});
+app.get("/", (req, res) => res.send("Backend is running!"));
 
-app.get("/", (req, res) => {
-  res.send("Backend is running!");
-});
-
-app.get(
-  "/oauth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-app.get(
-  "/oauth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
-  (req, res) => {
-    res.redirect(`${process.env.FRONTEND_URL}/profile`);
-  }
-);
-
-app.get("/profile", (req, res) => {
-  res.send(req.user);
-  console.log("user: ", req.user);
-});
-
-app.get("/logout", (req, res) => {
-  req.logOut(() => {
-    res.redirect(`${process.env.FRONTEND_URL}`);
-  });
-});
-
-const PORT = process.env.PORT || 5050;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+export default app;
