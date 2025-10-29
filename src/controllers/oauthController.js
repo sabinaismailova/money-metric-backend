@@ -20,3 +20,8 @@ export const logout = async (req, res, next) => {
     next(err);
   }
 };
+
+export const isAuthenticated = (req, res, next) => {
+  if (req.user) return next();
+  res.status(401).json({ message: "Not authenticated" });
+};
