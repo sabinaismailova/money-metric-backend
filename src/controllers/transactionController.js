@@ -2,7 +2,6 @@ import Transaction from "../models/transactionModal.js";
 
 export const addTransaction = async (req, res) => {
   try {
-    console.log(req.body)
     const {
       type,
       category,
@@ -10,26 +9,36 @@ export const addTransaction = async (req, res) => {
       date,
       note,
       isRecurring,
-      recurranceInterval,
-      nextRecurrance,
+      recurrenceInterval,
+      nextRecurrence,
     } = req.body;
     const userId = req.user._id;
 
-    const transaction = await Transaction.create({
+    const transactionData = {
       userId,
       type,
       category,
-      amount,
-      date,
+      amount: Number(amount),
+      date: new Date(date),
       note,
       isRecurring,
-      recurranceInterval,
-      nextRecurrance,
-    });
+    };
+
+    if (isRecurring) {
+      transactionData.recurrenceInterval = recurrenceInterval;
+      transactionData.nextRecurrence = new Date(nextRecurrence);
+    }
+
+    const transaction = await Transaction.create(transactionData);
 
     res.status(201).json(transaction);
   } catch (error) {
-    res.status(500).json({ message: "Error adding transaction", error });
+    console.error("Error adding transaction:", error);
+    res.status(500).json({
+      message: "Error adding transaction",
+      error: error.message,
+      stack: error.stack,
+    });
   }
 };
 

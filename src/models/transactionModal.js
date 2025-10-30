@@ -9,7 +9,7 @@ const transactionSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["income", "expense"],
+      enum: ["Income", "Expense"],
       required: true,
     },
     category: {
@@ -32,12 +32,12 @@ const transactionSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    recurranceInterval: {
+    recurrenceInterval: {
       type: String,
-      enum: ["daily", "weekly", "biweekly", "monthly", "yearly", "none"],
-      default: "none",
+      enum: ["Daily", "Weekly", "Biweekly", "Monthly", "Yearly", ""],
+      default: "",
     },
-    nextRecurrance: {
+    nextRecurrence: {
       type: Date,
     },
   },
