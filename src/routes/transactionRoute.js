@@ -3,11 +3,10 @@ import {
   addTransaction,
   getTransactions,
 } from "../controllers/transactionController.js";
-import { isAuthenticated } from "../controllers/oauthController.js";
 
 const router = express.Router();
 
-router.post("/", isAuthenticated, addTransaction);
-router.get("/", isAuthenticated, getTransactions);
+router.post("/", addTransaction);
+router.get("/", getTransactions);
 
 export default router;
