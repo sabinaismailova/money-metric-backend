@@ -3,11 +3,13 @@ import cors from "cors";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import passport from "passport";
+import cron from "node-cron";
 import setupPassport from "./config/passport.js";
 import oauthRoutes from "./routes/oauthRoute.js";
 import userRoutes from "./routes/userRoute.js";
 import transactionRoute from "./routes/transactionRoute.js";
 import { isAuthenticated } from "./controllers/oauthController.js";
+import { processRecurringTransactions} from "./controllers/transactionController.js"
 import dotenv from "dotenv";
 import connectDB from "./config/mongodb.js";
 
@@ -21,6 +23,10 @@ const app = express();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  cron.schedule("0 0 * * *", async () => {
+    console.log("Running recurring transaction processor...");
+    await processRecurringTransactions();
+  });
 });
 
 app.use(

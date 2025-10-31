@@ -1,5 +1,5 @@
 export const googleCallback = (req, res) => {
-  res.redirect(`${process.env.FRONTEND_URL}/profile`);
+  res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
 };
 
 export const getProfile = (req, res) => {
