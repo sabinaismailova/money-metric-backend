@@ -16,18 +16,24 @@ import connectDB from "./config/mongodb.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 5050;
-
-connectDB(process.env.MONGODB_URL);
-
 const app = express();
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  cron.schedule("0 0 * * *", async () => {
-    console.log("Running recurring transaction processor...");
-    await processRecurringTransactions();
-  });
-});
+connectDB(process.env.MONGODB_URL)
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+            cron.schedule("0 * * * *", async () => {
+                console.log("🕛 Running recurring transaction processor...");
+                try {
+                  await processRecurringTransactions(); 
+                  console.log("✅ Recurring transactions processed successfully.");
+                } catch (err) {
+                  console.error("❌ Error running recurring transactions:", err);
+                }
+            });
+        });
+    })
+    .catch((err) => console.error("MongoDB connection failed:", err));
 
 app.use(
   cors({

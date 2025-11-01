@@ -40,6 +40,9 @@ const transactionSchema = new mongoose.Schema(
     nextRecurrence: {
       type: Date,
     },
+    timezone: {
+        type: String,
+    }
   },
   {
     timestamps: true,
