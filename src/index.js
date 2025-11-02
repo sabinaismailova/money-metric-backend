@@ -1,8 +1,7 @@
 import express from "express";
 import cors from "cors";
-import session from "express-session";
-import MongoStore from "connect-mongo";
 import passport from "passport";
+import cookieParser from "cookie-parser";
 import setupPassport from "./config/passport.js";
 import oauthRoutes from "./routes/oauthRoute.js";
 import userRoutes from "./routes/userRoute.js";
@@ -25,28 +24,12 @@ connectDB(process.env.MONGODB_URL).catch((err) =>
 //   console.log(`Server running on port ${PORT}`);
 // });
 
+app.use(cookieParser());
+
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
-  })
-);
-
-app.use(
-  session({
-    secret: "secret",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URL,
-      collectionName: "sessions",
-    }),
-    cookie: {
-      secure: true,
-      httpOnly: true,
-      sameSite: "none",
-      maxAge: 1000 * 60 * 60 * 24,
-    },
   })
 );
 
