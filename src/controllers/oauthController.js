@@ -1,8 +1,17 @@
 import jwt from "jsonwebtoken";
 
 export const googleCallback = (req, res) => {
+  const user = req.user;
+
+  if (!user) return res.status(401).json({ message: "No user returned" });
+
   const token = jwt.sign(
-    { userId: req.user._id, email: req.user.email },
+    {
+      userId: user._id,
+      email: user.email,
+      displayName: user.displayName,
+      photo: user.photo,
+    },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
@@ -39,12 +48,9 @@ export const isAuthenticated = (req, res, next) => {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = {
-      _id: decoded.userId,
-      email: decoded.email,
-    };
+    req.user = payload
 
     next();
   } catch (err) {

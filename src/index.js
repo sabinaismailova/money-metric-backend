@@ -13,16 +13,16 @@ import connectDB from "./config/mongodb.js";
 
 dotenv.config();
 
-// const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 5050;
 const app = express();
 
 connectDB(process.env.MONGODB_URL).catch((err) =>
   console.error("MongoDB connection failed:", err)
 );
 
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 app.use(cookieParser());
 

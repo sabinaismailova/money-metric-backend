@@ -22,7 +22,7 @@ export const addTransaction = async (req, res) => {
             nextRecurrence,
             timezone,
         } = req.body;
-        const userId = req.user._id;
+        const userId = req.user.userId;
 
         const transactionData = {
             userId,
@@ -55,7 +55,7 @@ export const addTransaction = async (req, res) => {
 
 export const getTransactions = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user.userId;
         const transactions = await Transaction.find({
             userId
         }).sort({
