@@ -34,7 +34,6 @@ app.use(
 );
 
 app.use(passport.initialize());
-app.use(passport.session());
 setupPassport(passport);
 
 app.use(express.json());
