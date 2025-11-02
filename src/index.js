@@ -3,13 +3,12 @@ import cors from "cors";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import passport from "passport";
-import cron from "node-cron";
 import setupPassport from "./config/passport.js";
 import oauthRoutes from "./routes/oauthRoute.js";
 import userRoutes from "./routes/userRoute.js";
 import transactionRoute from "./routes/transactionRoute.js";
 import { isAuthenticated } from "./controllers/oauthController.js";
-import { processRecurringTransactions} from "./controllers/transactionController.js"
+import { processRecurringTransactions } from "./controllers/transactionController.js";
 import dotenv from "dotenv";
 import connectDB from "./config/mongodb.js";
 
@@ -22,15 +21,6 @@ connectDB(process.env.MONGODB_URL)
     .then(() => {
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
-            cron.schedule("0 * * * *", async () => {
-                console.log("🕛 Running recurring transaction processor...");
-                try {
-                  await processRecurringTransactions(); 
-                  console.log("✅ Recurring transactions processed successfully.");
-                } catch (err) {
-                  console.error("❌ Error running recurring transactions:", err);
-                }
-            });
         });
     })
     .catch((err) => console.error("MongoDB connection failed:", err));
@@ -65,7 +55,7 @@ app.use("/oauth", oauthRoutes);
 app.use("/user", isAuthenticated, userRoutes);
 app.use("/api/transactions", isAuthenticated, transactionRoute);
 
-
+app.post("/api/processRecurringTransactions", processRecurringTransactions);
 app.get("/", (req, res) => res.send("Backend is running!"));
 
 export default app;

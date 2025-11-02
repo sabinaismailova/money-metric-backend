@@ -1,9 +1,6 @@
 import mongoose from "mongoose";
 import Transaction from "../models/transactionModal.js";
 import {
-    toZonedTime
-} from "date-fns-tz";
-import {
     TZDate
 } from "@date-fns/tz";
 
@@ -109,7 +106,7 @@ function getNextRecurrenceDate(currentDate, interval) {
     return next;
 }
 
-export const processRecurringTransactions = async () => {
+export const processRecurringTransactions = async (req, res) => {
     try {
         const today = new Date()
         const recurring = await Transaction.find({
@@ -123,6 +120,8 @@ export const processRecurringTransactions = async () => {
             const userLocalDate = new TZDate(today, tx.timezone) // date object with timezone value and internal which is UTC converted to timezone
             const userLocalNow = userLocalDate.internal // actual date and time at the timezone specified in userLocalDate
             const nextRecurrenceLocal = today // UTC time 
+
+            console.log("Triggered recurring transaction processing at:", today);
 
             // this makes sure the transaction is created at the correct date for every user 
             //based on their timezone at 12 AM as 12AM in UTC timezone is still the day before for some timezones like ET
@@ -145,11 +144,12 @@ export const processRecurringTransactions = async () => {
                 newTx.nextRecurrence = nextDate;
 
                 await newTx.save();
+                console.log("Recurring transaction created at:", today);
             }
         }
-
-        console.log("Recurring transaction processor completed.");
+        res.status(200).json({ message: "Recurring transactions processed" });
     } catch (err) {
         console.error("Error processing recurring transactions:", err);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
