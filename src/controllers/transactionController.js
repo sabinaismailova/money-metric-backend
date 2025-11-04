@@ -131,9 +131,9 @@ function getNextRecurrenceDate(currentDate, interval) {
 export const processRecurringTransactions = async (req, res) => {
   try {
     const today = new Date();
-    const startOfDay = today;
+    const startOfDay = new Date();
     startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = today;
+    const endOfDay = new Date();
     endOfDay.setUTCHours(23, 59, 59, 999);
     const recurring = await Transaction.find({
       isRecurring: true,
