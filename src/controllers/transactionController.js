@@ -131,29 +131,25 @@ function getNextRecurrenceDate(currentDate, interval) {
 export const processRecurringTransactions = async (req, res) => {
   try {
     const today = new Date();
+    const startOfDay = today;
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = today;
+    endOfDay.setUTCHours(23, 59, 59, 999);
     const recurring = await Transaction.find({
       isRecurring: true,
-      nextRecurrence: {
-        $lte: today,
-      },
+      nextRecurrence: { $gte: startOfDay, $lte: endOfDay },
     });
 
     for (const tx of recurring) {
       const userLocalDate = new TZDate(today, tx.timezone); // date object with timezone value and internal which is UTC converted to timezone
       const userLocalNow = userLocalDate.internal; // actual date and time at the timezone specified in userLocalDate
-      const nextRecurrenceLocal = today; // UTC time
 
       console.log("Triggered recurring transaction processing at:", today);
 
       // this makes sure the transaction is created at the correct date for every user
       //based on their timezone at 12 AM as 12AM in UTC timezone is still the day before for some timezones like ET
 
-      if (
-        userLocalNow.getFullYear() === nextRecurrenceLocal.getFullYear() &&
-        userLocalNow.getMonth() === nextRecurrenceLocal.getMonth() &&
-        userLocalNow.getDate() === nextRecurrenceLocal.getDate() &&
-        userLocalNow.getHours() === 0
-      ) {
+      if (userLocalNow.getHours() === 0) {
         const newTx = new Transaction({
           ...tx.toObject(),
           _id: new mongoose.Types.ObjectId(),
