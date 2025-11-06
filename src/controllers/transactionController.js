@@ -2,11 +2,6 @@ import mongoose from "mongoose";
 import Transaction from "../models/transactionModal.js";
 import { TZDate } from "@date-fns/tz";
 
-function parseDateToUTC(dateStr) {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day));
-}
-
 export const addTransaction = async (req, res) => {
   try {
     const {
@@ -27,7 +22,7 @@ export const addTransaction = async (req, res) => {
       type,
       category,
       amount: Number(amount),
-      date: parseDateToUTC(date),
+      date: date,
       note,
       isRecurring,
       timezone,
@@ -35,7 +30,7 @@ export const addTransaction = async (req, res) => {
 
     if (isRecurring) {
       transactionData.recurrenceInterval = recurrenceInterval;
-      transactionData.nextRecurrence = parseDateToUTC(nextRecurrence);
+      transactionData.nextRecurrence = nextRecurrence;
     }
 
     const transaction = await Transaction.create(transactionData);
@@ -73,8 +68,8 @@ export const getTransactionsByMonthYear = async (req, res) => {
     const userId = req.user.userId;
     const { month, year } = req.params;
 
-    const startDate = new Date(year, month, 1);
-    const endDate = new Date(year, parseInt(month) + 1, 1);
+    const startDate = new Date(Date.UTC(year, month, 1, 0, 0, 0));
+    const endDate = new Date(Date.UTC(year, parseInt(month)+1, 0, 23, 59, 59));
 
     const transactions = await Transaction.find({
       userId,
