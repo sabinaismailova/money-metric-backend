@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Transaction from "../models/transactionModal.js";
+import Transaction from "../models/transactionModel.js";
 import { TZDate } from "@date-fns/tz";
 
 export const addTransaction = async (req, res) => {

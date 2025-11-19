@@ -10,6 +10,7 @@ import { isAuthenticated } from "./controllers/oauthController.js";
 import { processRecurringTransactions } from "./controllers/transactionController.js";
 import dotenv from "dotenv";
 import connectDB from "./config/mongodb.js";
+import userSummaryRoutes from "./routes/userSummaryRoute.js";
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use("/user", isAuthenticated, userRoutes);
 app.use("/api/transactions", isAuthenticated, transactionRoute);
 
 app.post("/api/processRecurringTransactions", processRecurringTransactions);
+app.use("/api/user-summary", isAuthenticated, userSummaryRoutes);
 app.get("/", (req, res) => res.send("Backend is running!"));
 
 export default app;
