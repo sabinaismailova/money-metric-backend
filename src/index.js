@@ -11,6 +11,7 @@ import { processRecurringTransactions } from "./controllers/transactionControlle
 import dotenv from "dotenv";
 import connectDB from "./config/mongodb.js";
 import userSummaryRoutes from "./routes/userSummaryRoute.js";
+import chatbotRoutes from "./routes/chatbotRoute.js";
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.use("/api/transactions", isAuthenticated, transactionRoute);
 
 app.post("/api/processRecurringTransactions", processRecurringTransactions);
 app.use("/api/user-summary", isAuthenticated, userSummaryRoutes);
+app.use("/api/chatbot", isAuthenticated, chatbotRoutes);
 app.get("/", (req, res) => res.send("Backend is running!"));
 
 export default app;

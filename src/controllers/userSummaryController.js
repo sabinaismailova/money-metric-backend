@@ -1,13 +1,8 @@
 import Transaction from "../models/transactionModel.js";
 import UserSummary from "../models/userSummaryModel.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import dotenv from "dotenv";
-dotenv.config();
+import { geminiModel } from "../config/gemini.js"
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-export async function generateSummary(summary) {
+export const generateSummary = async (summary) => {
   const prompt = `
   You are a personal finance assistant. Keep a semi professional tones. Write a brief, friendly,
   motivational monthly summary based ONLY on the following JSON:
@@ -21,11 +16,11 @@ export async function generateSummary(summary) {
   - No disclaimers, no "as an AI"
   `;
 
-  const result = await model.generateContent(prompt);
+  const result = await geminiModel.generateContent(prompt);
   return result.response.text();
 }
 
-export async function computeMonthlySummary(userId, year, month) {
+export const computeMonthlySummary = async (userId, year, month) => {
   const start = new Date(Date.UTC(year, month, 1));
   const end = new Date(Date.UTC(year, month + 1, 1));
   const txs = await Transaction.find({
@@ -70,26 +65,19 @@ export async function computeMonthlySummary(userId, year, month) {
   let expensesChangePct = 0;
   let categoryChanges = [];
 
+  const percentChange = (curr, prev) => {
+    if (prev === 0) {
+      if (curr === 0) return 0;
+      return 100;
+    }
+    return Number((((curr - prev) / prev) * 100).toFixed(1));
+  }
+
   if (prev) {
-    // --- Income & expense change ---
-    incomeChangePct = prev.totals.income
-      ? Number(
-          (((income - prev.totals.income) / prev.totals.income) * 100).toFixed(
-            1
-          )
-        )
-      : 0;
+    incomeChangePct = percentChange(income, prev.totals.income)
 
-    expensesChangePct = prev.totals.expenses
-      ? Number(
-          (
-            ((expenses - prev.totals.expenses) / prev.totals.expenses) *
-            100
-          ).toFixed(1)
-        )
-      : 0;
-
-    // --- Category-level change ---
+    expensesChangePct = percentChange(expenses, prev.totals.expenses)
+    
     const prevCategories = {};
     prev.breakdown.forEach((b) => (prevCategories[b.category] = b.amount));
 

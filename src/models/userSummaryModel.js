@@ -20,17 +20,17 @@ const UserSummarySchema = new mongoose.Schema({
   ],
 
   monthComparison: {
-    expensesChangePct: Number, // e.g., -12.4 means 12% less than prior month
+    expensesChangePct: Number,
     incomeChangePct: Number,
     categoryChanges: [
       {
         category: String,
-        changePct: Number, // a category’s increase/decrease compared to last month
+        changePct: Number,
       },
     ],
   },
 
-  summaryText: String, // precomputed natural-language summary
+  summaryText: String,
 
   lastUpdated: Date,
 });
