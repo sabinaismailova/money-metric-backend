@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Transaction from "../models/transactionModel.js";
 import { TZDate } from "@date-fns/tz";
+import { ObjectId } from "mongodb";
 
 export const addTransaction = async (req, res) => {
   try {
@@ -69,11 +70,16 @@ export const getTransactionsByMonthYear = async (req, res) => {
     const { month, year } = req.params;
 
     const startDate = new Date(Date.UTC(year, month, 1, 0, 0, 0));
-    const endDate = new Date(Date.UTC(year, parseInt(month)+1, 0, 23, 59, 59));
+    const endDate = new Date(
+      Date.UTC(year, parseInt(month) + 1, 0, 23, 59, 59)
+    );
 
     const transactions = await Transaction.find({
       userId,
-      date: { $gte: startDate, $lt: endDate },
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
     }).sort({
       date: -1,
     });
@@ -82,6 +88,45 @@ export const getTransactionsByMonthYear = async (req, res) => {
     res.status(500).json({
       message: "Error fetching transactions",
       error,
+    });
+  }
+};
+
+export const getYears = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const userObjectId = new ObjectId(userId);
+
+    const years = await Transaction.aggregate([
+      {
+        $match: {
+          userId: userObjectId
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $year: "$date"
+          }
+        }
+      },
+      {
+        $sort: {
+          _id: -1
+        }
+      },
+    ]);
+
+    const yearList = years.map((y) => y._id);
+
+    res.json({
+      years: yearList,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: "Failed to load years",
     });
   }
 };
@@ -132,7 +177,10 @@ export const processRecurringTransactions = async (req, res) => {
     endOfDay.setUTCHours(23, 59, 59, 999);
     const recurring = await Transaction.find({
       isRecurring: true,
-      nextRecurrence: { $gte: startOfDay, $lte: endOfDay },
+      nextRecurrence: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
     });
 
     for (const tx of recurring) {
@@ -160,9 +208,13 @@ export const processRecurringTransactions = async (req, res) => {
         console.log("Recurring transaction created at:", today);
       }
     }
-    res.status(200).json({ message: "Recurring transactions processed" });
+    res.status(200).json({
+      message: "Recurring transactions processed",
+    });
   } catch (err) {
     console.error("Error processing recurring transactions:", err);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };

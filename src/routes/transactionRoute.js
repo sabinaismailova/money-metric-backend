@@ -2,7 +2,8 @@ import express from "express";
 import {
   addTransaction,
   getTransactions,
-  getTransactionsByMonthYear
+  getTransactionsByMonthYear,
+  getYears
 } from "../controllers/transactionController.js";
 
 const router = express.Router();
@@ -10,5 +11,7 @@ const router = express.Router();
 router.post("/", addTransaction);
 router.get("/", getTransactions);
 router.get("/:month/:year", getTransactionsByMonthYear);
+router.get("/years", getYears);
+  
 
 export default router;
