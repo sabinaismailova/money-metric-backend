@@ -101,20 +101,20 @@ export const getYears = async (req, res) => {
     const years = await Transaction.aggregate([
       {
         $match: {
-          userId: userObjectId
-        }
+          userId: userObjectId,
+        },
       },
       {
         $group: {
           _id: {
-            $year: "$date"
-          }
-        }
+            $year: "$date",
+          },
+        },
       },
       {
         $sort: {
-          _id: -1
-        }
+          _id: -1,
+        },
       },
     ]);
 
@@ -127,6 +127,34 @@ export const getYears = async (req, res) => {
     console.error(err);
     res.status(500).json({
       error: "Failed to load years",
+    });
+  }
+};
+
+export const getYearlyTransactions = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { year } = req.params;
+
+    const startDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
+    const endDate = new Date(
+      Date.UTC(Number(year)+1, 0, 0, 0, 0, 0)
+    );
+
+    const transactions = await Transaction.find({
+      userId,
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    }).sort({
+      date: -1,
+    });
+    res.status(200).json(transactions);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching yearly transactions",
+      error,
     });
   }
 };
