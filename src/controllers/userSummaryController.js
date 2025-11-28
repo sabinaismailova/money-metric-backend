@@ -1,11 +1,11 @@
 import Transaction from "../models/transactionModel.js";
 import UserSummary from "../models/userSummaryModel.js";
-import { geminiModel } from "../config/gemini.js"
+import { geminiModel } from "../config/gemini.js";
 
 export const generateSummary = async (summary) => {
   const prompt = `
   You are a personal finance assistant. Keep a semi professional tones. Write a brief, friendly,
-  motivational monthly summary based ONLY on the following JSON:
+  motivational ${summary.mode} financial summary based ONLY on the following JSON:
   
   ${JSON.stringify(summary, null, 2)}
   
@@ -14,13 +14,14 @@ export const generateSummary = async (summary) => {
   - Simple clear language
   - Mention % changes clearly
   - No disclaimers, no "as an AI"
+  - Write responses like you're an assistant answering the user's question
   `;
 
   const result = await geminiModel.generateContent(prompt);
   return result.response.text();
-}
+};
 
-export const computeMonthlySummary = async (userId, year, month) => {
+export const computeSummary = async (userId, year, month, mode) => {
   const start = new Date(Date.UTC(year, month, 1));
   const end = new Date(Date.UTC(year, month + 1, 1));
   const txs = await Transaction.find({
@@ -52,14 +53,22 @@ export const computeMonthlySummary = async (userId, year, month) => {
     })
   );
 
-  const prevYear = month === 1 ? year - 1 : year;
+  const prevYear = mode == "yearly" ? year - 1 : month === 1 ? year - 1 : year;
   const prevMonth = month === 1 ? 12 : month - 1;
 
-  const prev = await UserSummary.findOne({
-    userId,
-    year: prevYear,
-    month: prevMonth,
-  }).lean();
+  const prev =
+    mode === "yearly"
+      ? await UserSummary.findOne({
+          userId,
+          year: prevYear,
+          mode,
+        }).lean()
+      : await UserSummary.findOne({
+          userId,
+          year: prevYear,
+          month: prevMonth,
+          mode,
+        }).lean();
 
   let incomeChangePct = 0;
   let expensesChangePct = 0;
@@ -71,13 +80,13 @@ export const computeMonthlySummary = async (userId, year, month) => {
       return 100;
     }
     return Number((((curr - prev) / prev) * 100).toFixed(1));
-  }
+  };
 
   if (prev) {
-    incomeChangePct = percentChange(income, prev.totals.income)
+    incomeChangePct = percentChange(income, prev.totals.income);
 
-    expensesChangePct = percentChange(expenses, prev.totals.expenses)
-    
+    expensesChangePct = percentChange(expenses, prev.totals.expenses);
+
     const prevCategories = {};
     prev.breakdown.forEach((b) => (prevCategories[b.category] = b.amount));
 
@@ -92,9 +101,10 @@ export const computeMonthlySummary = async (userId, year, month) => {
   }
 
   const summaryText = await generateSummary({
+    mode,
     totals: { income, expenses, net },
     breakdown,
-    monthComparison: {
+    comparison: {
       incomeChangePct,
       expensesChangePct,
       categoryChanges,
@@ -104,9 +114,10 @@ export const computeMonthlySummary = async (userId, year, month) => {
   await UserSummary.findOneAndUpdate(
     { userId, year, month },
     {
+      mode,
       totals: { income, expenses, net },
       breakdown,
-      monthComparison: {
+      comparison: {
         expensesChangePct,
         incomeChangePct,
         categoryChanges,
@@ -116,4 +127,4 @@ export const computeMonthlySummary = async (userId, year, month) => {
     },
     { upsert: true }
   );
-}
+};

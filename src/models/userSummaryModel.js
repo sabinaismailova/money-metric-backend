@@ -4,6 +4,10 @@ const UserSummarySchema = new mongoose.Schema({
   userId: mongoose.Schema.Types.ObjectId,
   year: Number,
   month: Number,
+  mode: {
+    type: String,
+    enum: ["monthly", "yearly"],
+  },
 
   totals: {
     income: Number,
@@ -19,7 +23,7 @@ const UserSummarySchema = new mongoose.Schema({
     },
   ],
 
-  monthComparison: {
+  comparison: {
     expensesChangePct: Number,
     incomeChangePct: Number,
     categoryChanges: [

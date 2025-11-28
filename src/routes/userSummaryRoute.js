@@ -1,5 +1,5 @@
 import express from "express";
-import { computeMonthlySummary } from "../controllers/userSummaryController.js";
+import { computeSummary } from "../controllers/userSummaryController.js";
 import UserSummary from "../models/userSummaryModel.js";
 
 const router = express.Router();
@@ -9,14 +9,15 @@ router.get("/", async (req, res) => {
     const userId = req.user.userId;
     const year = parseInt(req.query.year);
     const month = parseInt(req.query.month);
+    const mode = req.query.mode
 
     if (!year || !month) {
-      return res.status(400).json({ error: "Year and month are required" });
+      return res.status(400).json({ error: "Year is required" });
     }
 
-    await computeMonthlySummary(userId, year, month);
+    await computeSummary(userId, year, month, mode);
 
-    const summary = await UserSummary.findOne({ userId, year, month }).lean();
+    const summary = mode=="yearly"? await UserSummary.findOne({ userId, year, mode}).lean(): await UserSummary.findOne({ userId, year, month, mode}).lean();
 
     res.json(summary);
   } catch (err) {
