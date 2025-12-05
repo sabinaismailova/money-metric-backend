@@ -16,10 +16,6 @@ const transactionSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    color: {
-      type: String,
-      default: '#4bc0c0',
-    },
     amount: {
       type: Number,
       required: true,

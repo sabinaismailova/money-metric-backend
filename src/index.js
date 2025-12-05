@@ -6,6 +6,7 @@ import setupPassport from "./config/passport.js";
 import oauthRoutes from "./routes/oauthRoute.js";
 import userRoutes from "./routes/userRoute.js";
 import transactionRoute from "./routes/transactionRoute.js";
+import categoryColorsRoute from "./routes/categoryColorsRoute.js";
 import { isAuthenticated } from "./controllers/oauthController.js";
 import { processRecurringTransactions } from "./controllers/transactionController.js";
 import dotenv from "dotenv";
@@ -44,6 +45,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/oauth", oauthRoutes);
 app.use("/user", isAuthenticated, userRoutes);
 app.use("/api/transactions", isAuthenticated, transactionRoute);
+app.use("/api/categoryColors", isAuthenticated, categoryColorsRoute);
 
 app.post("/api/processRecurringTransactions", processRecurringTransactions);
 app.use("/api/user-summary", isAuthenticated, userSummaryRoutes);

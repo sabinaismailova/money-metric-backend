@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Transaction from "../models/transactionModel.js";
+import CategoryColor from "../models/categoryColorsModel.js";
 import { TZDate } from "@date-fns/tz";
 import { ObjectId } from "mongodb";
 
@@ -35,6 +36,18 @@ export const addTransaction = async (req, res) => {
     }
 
     const transaction = await Transaction.create(transactionData);
+
+    const cat = await CategoryColor.findOne({
+      userId,
+      category: transaction.category,
+    });
+
+    if (!cat) {
+      await CategoryColor.create({
+        userId,
+        category: transaction.category,
+      });
+    }
 
     res.status(201).json(transaction);
   } catch (error) {
@@ -137,9 +150,7 @@ export const getYearlyTransactions = async (req, res) => {
     const { year } = req.params;
 
     const startDate = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
-    const endDate = new Date(
-      Date.UTC(Number(year)+1, 0, 0, 0, 0, 0)
-    );
+    const endDate = new Date(Date.UTC(Number(year) + 1, 0, 0, 0, 0, 0));
 
     const transactions = await Transaction.find({
       userId,
