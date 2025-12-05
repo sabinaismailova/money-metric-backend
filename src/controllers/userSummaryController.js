@@ -5,7 +5,9 @@ import { geminiModel } from "../config/gemini.js";
 export const generateSummary = async (summary) => {
   const prompt = `
   You are a personal finance assistant. Keep a semi professional tones. Write a brief, friendly,
-  motivational ${summary.mode} financial summary based ONLY on the following JSON:
+  motivational ${
+    summary.mode
+  } financial summary based ONLY on the following JSON:
   
   ${JSON.stringify(summary, null, 2)}
   
@@ -22,8 +24,14 @@ export const generateSummary = async (summary) => {
 };
 
 export const computeSummary = async (userId, year, month, mode) => {
-  const start = new Date(Date.UTC(year, month, 1));
-  const end = new Date(Date.UTC(year, month + 1, 1));
+  const start =
+    mode == "yearly"
+      ? new Date(Date.UTC(year, 0, 1))
+      : new Date(Date.UTC(year, month, 1));
+  const end =
+    mode == "yearly"
+      ? new Date(Date.UTC(year + 1, 0, 0))
+      : new Date(Date.UTC(year, month + 1, 1));
   const txs = await Transaction.find({
     userId,
     date: { $gte: start, $lt: end },
