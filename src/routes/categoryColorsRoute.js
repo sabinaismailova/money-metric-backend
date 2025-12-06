@@ -8,7 +8,7 @@ import {
 const router = express.Router();
 
 router.post("/sync", sync)
-router.put("/", updateCategoryColors);
+router.put("/update", updateCategoryColors);
 router.get("/", getCategoryColors);
 
 export default router;
