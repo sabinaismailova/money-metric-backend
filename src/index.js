@@ -7,6 +7,7 @@ import oauthRoutes from "./routes/oauthRoute.js";
 import userRoutes from "./routes/userRoute.js";
 import transactionRoute from "./routes/transactionRoute.js";
 import categoryColorsRoute from "./routes/categoryColorsRoute.js";
+import transactionTypeColorsRoute from "./routes/transactionTypeColorsRoute.js";
 import { isAuthenticated } from "./controllers/oauthController.js";
 import { processRecurringTransactions } from "./controllers/transactionController.js";
 import dotenv from "dotenv";
@@ -46,6 +47,7 @@ app.use("/oauth", oauthRoutes);
 app.use("/user", isAuthenticated, userRoutes);
 app.use("/api/transactions", isAuthenticated, transactionRoute);
 app.use("/api/categoryColors", isAuthenticated, categoryColorsRoute);
+app.use("/api/transactionTypeColors", isAuthenticated, transactionTypeColorsRoute);
 
 app.post("/api/processRecurringTransactions", processRecurringTransactions);
 app.use("/api/user-summary", isAuthenticated, userSummaryRoutes);
