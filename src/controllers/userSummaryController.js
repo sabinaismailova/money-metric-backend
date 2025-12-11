@@ -108,31 +108,66 @@ export const computeSummary = async (userId, year, month, mode) => {
     });
   }
 
-  const summaryText = await generateSummary({
-    mode,
-    totals: { income, expenses, net },
-    breakdown,
-    comparison: {
-      incomeChangePct,
-      expensesChangePct,
-      categoryChanges,
-    },
-  });
+  console.log("month: ", month);
+  console.log("year: ", year);
+  console.log("mode: ", mode);
 
-  await UserSummary.findOneAndUpdate(
-    { userId, year, month },
-    {
+  let existingSummary =
+    mode == "monthly"
+      ? await UserSummary.findOne({ userId, year, month, mode })
+      : await UserSummary.findOne({ userId, year, mode });
+
+  if (
+    existingSummary.totals.income != income ||
+    existingSummary.totals.expenses != expenses ||
+    existingSummary == null
+  ) {
+    const summaryText = await generateSummary({
       mode,
       totals: { income, expenses, net },
       breakdown,
       comparison: {
-        expensesChangePct,
         incomeChangePct,
+        expensesChangePct,
         categoryChanges,
       },
-      summaryText,
-      lastUpdated: new Date(),
-    },
-    { upsert: true }
-  );
+    });
+
+    if (mode == "yearly") {
+      await UserSummary.findOneAndUpdate(
+        { userId, year },
+        {
+          mode,
+          totals: { income, expenses, net },
+          breakdown,
+          comparison: {
+            expensesChangePct,
+            incomeChangePct,
+            categoryChanges,
+          },
+          summaryText,
+          lastUpdated: new Date(),
+        },
+        { upsert: true }
+      );
+    }
+    if (mode == "monthly") {
+      await UserSummary.findOneAndUpdate(
+        { userId, year, month },
+        {
+          mode,
+          totals: { income, expenses, net },
+          breakdown,
+          comparison: {
+            expensesChangePct,
+            incomeChangePct,
+            categoryChanges,
+          },
+          summaryText,
+          lastUpdated: new Date(),
+        },
+        { upsert: true }
+      );
+    }
+  }
 };
