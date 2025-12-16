@@ -108,19 +108,15 @@ export const computeSummary = async (userId, year, month, mode) => {
     });
   }
 
-  console.log("month: ", month);
-  console.log("year: ", year);
-  console.log("mode: ", mode);
-
   let existingSummary =
     mode == "monthly"
       ? await UserSummary.findOne({ userId, year, month, mode })
       : await UserSummary.findOne({ userId, year, mode });
 
   if (
+    existingSummary == null ||
     existingSummary.totals.income != income ||
-    existingSummary.totals.expenses != expenses ||
-    existingSummary == null
+    existingSummary.totals.expenses != expenses
   ) {
     const summaryText = await generateSummary({
       mode,
