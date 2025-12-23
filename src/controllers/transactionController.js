@@ -3,6 +3,7 @@ import Transaction from "../models/transactionModel.js";
 import CategoryColor from "../models/categoryColorsModel.js";
 import { TZDate } from "@date-fns/tz";
 import { ObjectId } from "mongodb";
+import TransactionTypeColor from "../models/transactionTypeColorsModel.js";
 
 export const addTransaction = async (req, res) => {
   try {
@@ -46,6 +47,18 @@ export const addTransaction = async (req, res) => {
       await CategoryColor.create({
         userId,
         category: transaction.category,
+      });
+    }
+
+    const transactionType = await TransactionTypeColor.findOne({
+      userId,
+      type: transaction.type,
+    });
+
+    if (!transactionType) {
+      await TransactionTypeColor.create({
+        userId,
+        type: transaction.type,
       });
     }
 
